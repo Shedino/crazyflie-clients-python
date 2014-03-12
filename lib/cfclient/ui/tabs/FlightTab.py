@@ -67,7 +67,7 @@ class FlightTab(Tab, flight_tab_class):
     _althold_data_signal = pyqtSignal(int, object, object)
     _baro_data_signal = pyqtSignal(int, object, object)
 
-    _input_updated_signal = pyqtSignal(float, float, float, float)
+    _input_updated_signal = pyqtSignal(float, float, float, float, float)
     _rp_trim_updated_signal = pyqtSignal(float, float)
     _emergency_stop_updated_signal = pyqtSignal(bool)
 
@@ -235,6 +235,7 @@ class FlightTab(Tab, flight_tab_class):
         lg.add_variable("stabilizer.pitch", "float")
         lg.add_variable("stabilizer.yaw", "float")
         lg.add_variable("stabilizer.thrust", "uint16_t")
+        #lg.add_variable("stabilizer.yawOpti", "float") #qua
 
         self.helper.cf.log.add_config(lg)
         if (lg.valid):

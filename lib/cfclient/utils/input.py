@@ -59,6 +59,9 @@ from cfclient.utils.config_manager import ConfigManager
 from cfclient.utils.periodictimer import PeriodicTimer
 from cflib.utils.callbacks import Caller
 
+### UDPServerReader
+from cfclient.utils.UDPServerReader import UDPServerReader
+
 MAX_THRUST = 65000
 
 class JoystickReader:
@@ -70,7 +73,8 @@ class JoystickReader:
 
     def __init__(self, do_device_discovery=True):
         # TODO: Should be OS dependant
-        self.inputdevice = PyGameReader()
+        ### self.inputdevice = PyGameReader()
+        self.inputdevice = UDPServerReader()
         
         self._min_thrust = 0
         self._max_thrust = 0
@@ -190,7 +194,7 @@ class JoystickReader:
         """ Read raw values from the input device."""
         return self.inputdevice.readRawValues()
 
-    def start_input(self, device_name, config_name):
+    def start_input(self, device_name, config_name, port): ### added port
         """
         Start reading input from the device with name device_name using config
         config_name
@@ -199,7 +203,7 @@ class JoystickReader:
             device_id = self._available_devices[device_name]
             self.inputdevice.start_input(
                                     device_id,
-                                    ConfigManager().get_config(config_name))
+                                    ConfigManager().get_config(config_name), port) ###
             self._read_timer.start()
         except Exception:
             self.device_error.call(
@@ -249,6 +253,7 @@ class JoystickReader:
             pitch = data["pitch"] * self._max_rp_angle
             thrust = data["thrust"]
             yaw = data["yaw"]
+            yaw_Opti = data["yaw_Opti"] ##Test in corso
             raw_thrust = data["thrust"]
             emergency_stop = data["estop"]
             trim_roll = data["rollcal"]
@@ -295,7 +300,8 @@ class JoystickReader:
 
             trimmed_roll = roll + self._trim_roll
             trimmed_pitch = pitch + self._trim_pitch
-            self.input_updated.call(trimmed_roll, trimmed_pitch, yaw, thrust)
+            ##self.input_updated.call(trimmed_roll, trimmed_pitch, yaw, thrust) ## - Non visualizzo yaw_Opti  , yaw_Opti)
+            self.input_updated.call(trimmed_roll, trimmed_pitch, yaw, thrust, yaw_Opti)
         except Exception:
             logger.warning("Exception while reading inputdevice: %s",
                            traceback.format_exc())

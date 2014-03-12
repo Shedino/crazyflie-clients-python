@@ -56,6 +56,8 @@ def main():
     parser.add_argument('--debug', '-d', nargs=1, default='info', type=str,
                         help="set debug level "
                         "[minimal, info, debug, debugfile]")
+    parser.add_argument('--port', '-p', nargs=1, default='9030', type=int, ### added port
+                        help="set the UDP listen port [default: 9030]")
     args = parser.parse_args()
     globals().update(vars(args))
 
@@ -103,6 +105,15 @@ def main():
         logger.critical("No PyQT4 installation found, exiting!")
         sys.exit(1)
 
+    ### Port
+    try:
+        port = int(vars(args)['port'][0]) # If specified, arg is a list
+    except:
+        port = int(vars(args)['port']) # If not specified, default port is an int
+    if port < 1024 or port > 65535:
+        logger.critical("Port must be in range [1024, 65535]. Exiting!")
+        sys.exit(1)
+
     # Disable printouts from STL
     if os.name == 'posix':
         stdout = os.dup(1)
@@ -133,4 +144,5 @@ def main():
     
     main_window = MainUI()
     main_window.show()
+    main_window.setPort(port) ### added port
     sys.exit(app.exec_())

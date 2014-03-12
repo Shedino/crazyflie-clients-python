@@ -401,7 +401,7 @@ class MainUI(QtGui.QMainWindow, main_window_class):
                      "device_config_mapping"
                      )[self._active_device] = self._active_config
         self.joystickReader.start_input(self._active_device,
-                                       self._active_config)
+                                       self._active_config, self.port) ### added port
 
         # update the checked state of the menu items
         for c in self._menu_mappings.actions():
@@ -444,7 +444,7 @@ class MainUI(QtGui.QMainWindow, main_window_class):
                 c.setChecked(True)
 
         self.joystickReader.start_input(str(sender.text()),
-                                        self._current_input_config)
+                                        self._current_input_config, self.port) ### added port
         self._statusbar_label.setText("Using [%s] with config [%s]" % (
                                       self._active_device,
                                       self._current_input_config))
@@ -500,3 +500,6 @@ class MainUI(QtGui.QMainWindow, main_window_class):
     def closeAppRequest(self):
         self.close()
         sys.exit(0)
+
+    def setPort(self, port): ### added port
+        self.port = port
