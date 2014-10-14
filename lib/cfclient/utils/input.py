@@ -300,7 +300,6 @@ class JoystickReader:
 
             trimmed_roll = roll + self._trim_roll
             trimmed_pitch = pitch + self._trim_pitch
-            ##self.input_updated.call(trimmed_roll, trimmed_pitch, yaw, thrust) ## - Non visualizzo yaw_Opti  , yaw_Opti)
             self.input_updated.call(trimmed_roll, trimmed_pitch, yaw, thrust, yaw_Opti)
         except Exception:
             logger.warning("Exception while reading inputdevice: %s",

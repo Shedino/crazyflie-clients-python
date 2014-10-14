@@ -45,6 +45,7 @@ from .exceptions import WrongUriType
 import threading
 import Queue
 import re
+import usb
 import array
 
 from cflib.drivers.crazyradio import Crazyradio
@@ -199,35 +200,42 @@ class RadioDriver(CRTPDriver):
 
     def scan_interface(self):
         """ Scan interface for Crazyflies """
-        if self.cradio is None:
-            try:
-                self.cradio = Crazyradio()
-            except Exception:
-                return []
-        else:
-            raise Exception("Cannot scann for links while the link is open!")
-
-        # FIXME: implements serial number in the Crazyradio driver!
-        serial = "N/A"
-
-        logger.info("v%s dongle with serial %s found", self.cradio.version,
-                    serial)
         found = []
+        cont = 0
+        device_num = 0
+        busses = usb.busses()
+        for bus in busses:
+            for device in bus.devices:
+                if device.idVendor == 0x1915:
+                    if device.idProduct == 0x7777:
+                        device_num += 1
 
-        self.cradio.set_arc(1)
+        logger.info("Numero di antenne trovate: %d", device_num)
 
-        self.cradio.set_data_rate(self.cradio.DR_250KPS)
-        found += map(lambda c: ["radio://0/{}/250K".format(c), ""],
-                     self._scan_radio_channels())
-        self.cradio.set_data_rate(self.cradio.DR_1MPS)
-        found += map(lambda c: ["radio://0/{}/1M".format(c), ""],
-                     self._scan_radio_channels())
-        self.cradio.set_data_rate(self.cradio.DR_2MPS)
-        found += map(lambda c: ["radio://0/{}/2M".format(c), ""],
-                     self._scan_radio_channels())
+        while cont < device_num:
+            if self.cradio is None:
+                try:
+                    self.cradio = Crazyradio(devid=cont)
+                except Exception:
+                    logger.info("L'antenna n: %d e' momentaneamente non disponibile.", cont)
+                    cont += 1
+                    self.cradio = None
+                    continue
+            else:
+                raise Exception("Cannot scann for links while the link is open!")
 
-        self.cradio.close()
-        self.cradio = None
+            self.cradio.set_arc(1)
+
+            self.cradio.set_data_rate(self.cradio.DR_250KPS)
+            found += map(lambda c: [("radio://"+unicode(cont)+"/{}/250K").format(c), ""], self._scan_radio_channels())
+            self.cradio.set_data_rate(self.cradio.DR_1MPS)
+            found += map(lambda c: ["radio://"+unicode(cont)+"/{}/1M".format(c), ""], self._scan_radio_channels())
+            self.cradio.set_data_rate(self.cradio.DR_2MPS)
+            found += map(lambda c: ["radio://"+unicode(cont)+"/{}/2M".format(c), ""], self._scan_radio_channels())
+
+            cont += 1
+            self.cradio.close()
+            self.cradio = None
 
         return found
 
